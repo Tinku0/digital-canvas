@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import AnimatedSlider from "./AnimatedSlider";
+import FancyColorPicker from "./FancyColorPicker";
 
 export default function DigitalArtCanvas() {
   // Refs for canvas and its context
@@ -138,21 +139,16 @@ export default function DigitalArtCanvas() {
     <div className="relative min-h-screen bg-gray-100">
       {/* Floating header with tools */}
       <header className="fixed top-0 left-0 w-full z-10 bg-white/80 backdrop-blur-sm border-b border-gray-200">
-        <div className="max-w-5xl mx-auto flex flex-wrap justify-between items-center px-4 py-3">
+        <div className="w-full mx-auto flex justify-between items-center px-4 py-3">
           <h1 className="text-xl font-bold">Digital Art Canvas</h1>
-          <div className="flex flex-wrap gap-2 items-center">
+          <div className="flex gap-2 items-center">
             <button onClick={undo} className="px-3 py-2 bg-yellow-500 text-white rounded">Undo</button>
             <button onClick={redo} className="px-3 py-2 bg-gray-500 text-white rounded">Redo</button>
             <button onClick={() => setMode("draw")} className={`px-3 py-2 rounded ${mode === "draw" ? "bg-blue-700" : "bg-blue-500"} text-white`}>Draw</button>
             <button onClick={() => setMode("erase")} className={`px-3 py-2 rounded ${mode === "erase" ? "bg-red-700" : "bg-red-500"} text-white`}>Eraser</button>
             <button onClick={() => setMode("rectangle")} className={`px-3 py-2 rounded ${mode === "rectangle" ? "bg-green-700" : "bg-green-500"} text-white`}>Rectangle</button>
             <button onClick={() => setMode("circle")} className={`px-3 py-2 rounded ${mode === "circle" ? "bg-purple-700" : "bg-purple-500"} text-white`}>Circle</button>
-            <input
-              type="color"
-              value={brushColor}
-              onChange={(e) => setBrushColor(e.target.value)}
-              className="w-10 h-10 border rounded"
-            />
+            <FancyColorPicker color={brushColor} setColor={setBrushColor} />
             {/* Custom animated slider for brush size */}
             <AnimatedSlider brushSize={brushSize} setBrushSize={setBrushSize} min={1} max={20} />
           </div>
