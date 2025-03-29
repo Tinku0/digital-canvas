@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import AnimatedSlider from "./AnimatedSlider";
 import FancyColorPicker from "./FancyColorPicker";
+import { FaUndo, FaRedo, FaPencilAlt, FaEraser, FaSquare, FaCircle, FaFileExport } from "react-icons/fa";
 
 export default function DigitalArtCanvas() {
   // Refs for canvas and its context
@@ -198,15 +199,15 @@ export default function DigitalArtCanvas() {
         <div className="w-full mx-auto flex gap-2 flex-col lg:flex-row justify-between items-start lg:items-center px-4 py-3">
           <h1 className="text-xl font-bold text-gray-700">Canvas</h1>
           <div className="flex flex-wrap gap-2 items-center justify-start lg:justify-center">
-            <button
+            {/* <button
               onClick={undo}
-              className="px-3 py-2 bg-yellow-500 text-white rounded"
+              className="px-3 py-2 bg-yellow-500 hover:bg-yellow-300 text-white rounded cursor-pointer"
             >
               Undo
             </button>
             <button
               onClick={redo}
-              className="px-3 py-2 bg-gray-500 text-white rounded"
+              className="px-3 py-2 bg-gray-500 text-white rounded cursor-pointer"
             >
               Redo
             </button>
@@ -214,7 +215,7 @@ export default function DigitalArtCanvas() {
               onClick={() => setMode("draw")}
               className={`px-3 py-2 rounded ${
                 mode === "draw" ? "bg-blue-700" : "bg-blue-500"
-              } text-white`}
+              } text-white cursor-pointer`}
             >
               Draw
             </button>
@@ -222,7 +223,7 @@ export default function DigitalArtCanvas() {
               onClick={() => setMode("erase")}
               className={`px-3 py-2 rounded ${
                 mode === "erase" ? "bg-red-700" : "bg-red-500"
-              } text-white`}
+              } text-white cursor-pointer`}
             >
               Eraser
             </button>
@@ -230,7 +231,7 @@ export default function DigitalArtCanvas() {
               onClick={() => setMode("rectangle")}
               className={`px-3 py-2 rounded ${
                 mode === "rectangle" ? "bg-green-700" : "bg-green-500"
-              } text-white`}
+              } text-white cursor-pointer`}
             >
               Rectangle
             </button>
@@ -238,15 +239,80 @@ export default function DigitalArtCanvas() {
               onClick={() => setMode("circle")}
               className={`px-3 py-2 rounded ${
                 mode === "circle" ? "bg-purple-700" : "bg-purple-500"
-              } text-white`}
+              } text-white cursor-pointer`}
             >
               Circle
             </button>
             <button
               onClick={exportAsPNG}
-              className="px-3 py-2 bg-green-600 text-white rounded"
+              className="px-3 py-2 bg-green-600 text-white rounded cursor-pointer"
             >
               Export PNG
+            </button> */}
+            <button
+              onClick={undo}
+              className="p-2 rounded bg-gray-700 hover:bg-gray-600 transition cursor-pointer"
+              title="Undo"
+            >
+              <FaUndo className="text-yellow-300" />
+            </button>
+            <button
+              onClick={redo}
+              className="p-2 rounded bg-gray-700 hover:bg-gray-600 transition cursor-pointer"
+              title="Redo"
+            >
+              <FaRedo className="text-gray-300" />
+            </button>
+            <button
+              onClick={() => setMode("draw")}
+              className={`p-2 rounded transition cursor-pointer ${
+                mode === "draw"
+                  ? "bg-blue-900"
+                  : "bg-gray-700 hover:bg-gray-600"
+              }`}
+              title="Draw"
+            >
+              <FaPencilAlt className="text-blue-400" />
+            </button>
+            <button
+              onClick={() => setMode("erase")}
+              className={`p-2 rounded transition cursor-pointer ${
+                mode === "erase"
+                  ? "bg-red-900"
+                  : "bg-gray-700 hover:bg-gray-600"
+              }`}
+              title="Eraser"
+            >
+              <FaEraser className="text-red-400" />
+            </button>
+            <button
+              onClick={() => setMode("rectangle")}
+              className={`p-2 rounded transition cursor-pointer ${
+                mode === "rectangle"
+                  ? "bg-green-900"
+                  : "bg-gray-700 hover:bg-gray-600"
+              }`}
+              title="Rectangle"
+            >
+              <FaSquare className="text-green-400" />
+            </button>
+            <button
+              onClick={() => setMode("circle")}
+              className={`p-2 rounded transition cursor-pointer ${
+                mode === "circle"
+                  ? "bg-purple-900"
+                  : "bg-gray-700 hover:bg-gray-600"
+              }`}
+              title="Circle"
+            >
+              <FaCircle className="text-purple-400" />
+            </button>
+            <button
+              onClick={exportAsPNG}
+              className="p-2 rounded bg-gray-700 hover:bg-gray-600 transition cursor-pointer"
+              title="Export PNG"
+            >
+              <FaFileExport className="text-green-400" />
             </button>
           </div>
 
