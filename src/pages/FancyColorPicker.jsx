@@ -17,7 +17,7 @@ const presetColors = [
 export default function FancyColorPicker({ color, setColor }) {
   return (
     <section className="flex gap-3">
-      <div className="flex flex-col items-center gap-3">
+      <div className="flex flex-row lg:flex-col items-center lg:item-center gap-3">
         <div className="flex gap-2">
           {presetColors.slice(0, 4)?.map((preset) => (
             <div
