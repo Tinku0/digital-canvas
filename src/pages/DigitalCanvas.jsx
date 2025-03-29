@@ -43,7 +43,7 @@ export default function DigitalArtCanvas() {
     const canvas = canvasRef.current;
     const imageData = canvas.toDataURL();
     if (history.length === 0 || history[history.length - 1] !== imageData) {
-      setHistory(prev => [...prev, imageData]);
+      setHistory((prev) => [...prev, imageData]);
       setRedoStack([]); // Clear redo stack on new action
     }
   };
@@ -53,7 +53,7 @@ export default function DigitalArtCanvas() {
     if (history.length > 1) {
       const newHistory = [...history];
       const lastState = newHistory.pop();
-      setRedoStack(prev => [lastState, ...redoStack]);
+      setRedoStack((prev) => [lastState, ...redoStack]);
       setHistory(newHistory);
       restoreCanvas(newHistory[newHistory.length - 1]);
     }
@@ -63,7 +63,7 @@ export default function DigitalArtCanvas() {
   const redo = () => {
     if (redoStack.length > 0) {
       const nextState = redoStack[0];
-      setHistory(prev => [...prev, nextState]);
+      setHistory((prev) => [...prev, nextState]);
       setRedoStack(redoStack.slice(1));
       restoreCanvas(nextState);
     }
@@ -109,7 +109,12 @@ export default function DigitalArtCanvas() {
       ctxRef.current.stroke();
     } else if (mode === "erase") {
       // Eraser: clear a rectangle centered on the cursor
-      ctxRef.current.clearRect(x - brushSize / 2, y - brushSize / 2, brushSize, brushSize);
+      ctxRef.current.clearRect(
+        x - brushSize / 2,
+        y - brushSize / 2,
+        brushSize,
+        brushSize
+      );
     }
   };
 
@@ -141,21 +146,65 @@ export default function DigitalArtCanvas() {
       <header className="fixed top-0 left-0 w-full z-10 bg-white/80 backdrop-blur-sm border-b border-gray-200">
         <div className="w-full mx-auto flex gap-2 flex-col lg:flex-row justify-between items-start lg:items-center px-4 py-3">
           <h1 className="text-xl font-bold text-gray-700">Canvas</h1>
-          <div className="flex gap-2 items-center">
-            <button onClick={undo} className="px-3 py-2 bg-yellow-500 text-white rounded">Undo</button>
-            <button onClick={redo} className="px-3 py-2 bg-gray-500 text-white rounded">Redo</button>
-            <button onClick={() => setMode("draw")} className={`px-3 py-2 rounded ${mode === "draw" ? "bg-blue-700" : "bg-blue-500"} text-white`}>Draw</button>
-            <button onClick={() => setMode("erase")} className={`px-3 py-2 rounded ${mode === "erase" ? "bg-red-700" : "bg-red-500"} text-white`}>Eraser</button>
-            <button onClick={() => setMode("rectangle")} className={`px-3 py-2 rounded ${mode === "rectangle" ? "bg-green-700" : "bg-green-500"} text-white`}>Rectangle</button>
-            <button onClick={() => setMode("circle")} className={`px-3 py-2 rounded ${mode === "circle" ? "bg-purple-700" : "bg-purple-500"} text-white`}>Circle</button>
+          <div className="flex flex-wrap gap-2 items-center justify-start lg:justify-center">
+            <button
+              onClick={undo}
+              className="px-3 py-2 bg-yellow-500 text-white rounded"
+            >
+              Undo
+            </button>
+            <button
+              onClick={redo}
+              className="px-3 py-2 bg-gray-500 text-white rounded"
+            >
+              Redo
+            </button>
+            <button
+              onClick={() => setMode("draw")}
+              className={`px-3 py-2 rounded ${
+                mode === "draw" ? "bg-blue-700" : "bg-blue-500"
+              } text-white`}
+            >
+              Draw
+            </button>
+            <button
+              onClick={() => setMode("erase")}
+              className={`px-3 py-2 rounded ${
+                mode === "erase" ? "bg-red-700" : "bg-red-500"
+              } text-white`}
+            >
+              Eraser
+            </button>
+            <button
+              onClick={() => setMode("rectangle")}
+              className={`px-3 py-2 rounded ${
+                mode === "rectangle" ? "bg-green-700" : "bg-green-500"
+              } text-white`}
+            >
+              Rectangle
+            </button>
+            <button
+              onClick={() => setMode("circle")}
+              className={`px-3 py-2 rounded ${
+                mode === "circle" ? "bg-purple-700" : "bg-purple-500"
+              } text-white`}
+            >
+              Circle
+            </button>
           </div>
+
           <FancyColorPicker color={brushColor} setColor={setBrushColor} />
-          <AnimatedSlider brushSize={brushSize} setBrushSize={setBrushSize} min={1} max={20} />
+          <AnimatedSlider
+            brushSize={brushSize}
+            setBrushSize={setBrushSize}
+            min={1}
+            max={20}
+          />
         </div>
       </header>
 
       {/* Canvas container with top padding to avoid header overlap */}
-      <div className="pt-[200px] lg:pt-20 flex justify-center">
+      <div className="pt-[230px] lg:pt-20 flex justify-center">
         <canvas
           ref={canvasRef}
           className="rounded-lg bg-white shadow-lg"
