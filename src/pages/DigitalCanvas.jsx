@@ -6,6 +6,7 @@ export default function DigitalArtCanvas() {
   // Refs for canvas and its context
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
+  const overlayRef = useRef(null);
 
   // States for drawing, tools, and history
   const [isDrawing, setIsDrawing] = useState(false);
@@ -26,16 +27,26 @@ export default function DigitalArtCanvas() {
   // Initialize canvas dimensions and context
   const setupCanvas = () => {
     const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+
     canvas.width = window.innerWidth * 0.8;
     canvas.height = window.innerHeight * 0.6;
-    const ctx = canvas.getContext("2d");
+
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctxRef.current = ctx;
-    // Optionally restore the latest state if available
-    if (history.length) {
-      restoreCanvas(history[history.length - 1]);
-    }
+
+    // Create an overlay canvas for previews
+    const overlay = document.createElement("canvas");
+    overlay.width = canvas.width;
+    overlay.height = canvas.height;
+    overlay.style.position = "absolute";
+    overlay.style.top = `${canvas.offsetTop}px`;
+    overlay.style.left = `${canvas.offsetLeft}px`;
+    overlay.style.pointerEvents = "none"; // Don't interfere with main canvas events
+
+    document.body.appendChild(overlay);
+    overlayRef.current = overlay;
   };
 
   // Save the current canvas state into history
@@ -100,43 +111,71 @@ export default function DigitalArtCanvas() {
     }
   };
 
-  // Continue drawing on mouse move
   const draw = (e) => {
     if (!isDrawing) return;
     const { x, y } = getCanvasCoordinates(e);
+
     if (mode === "draw") {
       ctxRef.current.lineTo(x, y);
       ctxRef.current.stroke();
     } else if (mode === "erase") {
-      // Eraser: clear a rectangle centered on the cursor
       ctxRef.current.clearRect(
         x - brushSize / 2,
         y - brushSize / 2,
         brushSize,
         brushSize
       );
+    } else if (mode === "rectangle" || mode === "circle") {
+      const overlayCtx = overlayRef.current.getContext("2d");
+      overlayCtx.clearRect(
+        0,
+        0,
+        overlayRef.current.width,
+        overlayRef.current.height
+      );
+
+      overlayCtx.strokeStyle = brushColor;
+      overlayCtx.lineWidth = brushSize;
+
+      const width = x - startPos.x;
+      const height = y - startPos.y;
+
+      if (mode === "rectangle") {
+        overlayCtx.strokeRect(startPos.x, startPos.y, width, height);
+      } else if (mode === "circle") {
+        const radius = Math.sqrt(width ** 2 + height ** 2);
+        overlayCtx.beginPath();
+        overlayCtx.arc(startPos.x, startPos.y, radius, 0, 2 * Math.PI);
+        overlayCtx.stroke();
+      }
     }
   };
 
-  // Finish drawing and save the state
   const stopDrawing = (e) => {
     if (!isDrawing) return;
     setIsDrawing(false);
+
     const { x, y } = getCanvasCoordinates(e);
-    if (mode === "rectangle" || mode === "circle") {
-      if (!startPos) return;
-      const width = x - startPos.x;
-      const height = y - startPos.y;
-      if (mode === "rectangle") {
-        ctxRef.current.strokeRect(startPos.x, startPos.y, width, height);
-      } else if (mode === "circle") {
-        const radius = Math.sqrt(width ** 2 + height ** 2);
-        ctxRef.current.beginPath();
-        ctxRef.current.arc(startPos.x, startPos.y, radius, 0, 2 * Math.PI);
-        ctxRef.current.stroke();
-      }
-      setStartPos(null);
+    if (!startPos) return; // Ensure startPos is defined before using it
+
+    const width = x !== null ? x - startPos.x : 0;
+    const height = y !== null ? y - startPos.y : 0;
+
+    const ctx = ctxRef.current;
+
+    if (mode === "rectangle") {
+      ctx.strokeRect(startPos.x, startPos.y, width, height);
+    } else if (mode === "circle") {
+      const radius = Math.sqrt(width ** 2 + height ** 2);
+      ctx.beginPath();
+      ctx.arc(startPos.x, startPos.y, radius, 0, 2 * Math.PI);
+      ctx.stroke();
     }
+
+    overlayRef.current
+      .getContext("2d")
+      .clearRect(0, 0, overlayRef.current.width, overlayRef.current.height); // Clear overlay after committing
+    setStartPos(null);
     saveHistory();
   };
 
