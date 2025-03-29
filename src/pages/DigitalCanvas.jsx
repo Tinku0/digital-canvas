@@ -179,6 +179,18 @@ export default function DigitalArtCanvas() {
     saveHistory();
   };
 
+  const exportAsPNG = () => {
+    const canvas = canvasRef.current;
+    const dataURL = canvas.toDataURL("image/png");
+  
+    const link = document.createElement("a");
+    link.href = dataURL;
+    link.download = "digital_art.png";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="relative min-h-screen bg-gray-100">
       {/* Floating header with tools */}
@@ -229,6 +241,12 @@ export default function DigitalArtCanvas() {
               } text-white`}
             >
               Circle
+            </button>
+            <button
+              onClick={exportAsPNG}
+              className="px-3 py-2 bg-green-600 text-white rounded"
+            >
+              Export PNG
             </button>
           </div>
 
