@@ -2,58 +2,63 @@ import { useRef, useState, useEffect } from "react";
 import AnimatedSlider from "./AnimatedSlider";
 
 export default function DigitalArtCanvas() {
+  // Refs for canvas and its context
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
+
+  // States for drawing, tools, and history
   const [isDrawing, setIsDrawing] = useState(false);
   const [brushColor, setBrushColor] = useState("#000000");
   const [brushSize, setBrushSize] = useState(5);
-  const [mode, setMode] = useState("draw"); // "draw" | "erase" | "rectangle" | "circle"
+  const [mode, setMode] = useState("draw"); // "draw", "erase", "rectangle", "circle"
   const [startPos, setStartPos] = useState(null);
   const [history, setHistory] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
 
-  // Setup canvas on mount and when window resizes
+  // Setup the canvas on mount and handle window resize
   useEffect(() => {
     setupCanvas();
     window.addEventListener("resize", setupCanvas);
     return () => window.removeEventListener("resize", setupCanvas);
   }, []);
 
+  // Initialize canvas dimensions and context
   const setupCanvas = () => {
     const canvas = canvasRef.current;
-    // Set canvas to 80% width and 60% height of window
     canvas.width = window.innerWidth * 0.8;
     canvas.height = window.innerHeight * 0.6;
     const ctx = canvas.getContext("2d");
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctxRef.current = ctx;
-    // Optionally, restore the latest history state if available
+    // Optionally restore the latest state if available
     if (history.length) {
       restoreCanvas(history[history.length - 1]);
     }
   };
 
-  // Save current canvas state into history
+  // Save the current canvas state into history
   const saveHistory = () => {
     const canvas = canvasRef.current;
     const imageData = canvas.toDataURL();
     if (history.length === 0 || history[history.length - 1] !== imageData) {
       setHistory(prev => [...prev, imageData]);
-      setRedoStack([]); // Clear redo stack when a new action occurs
+      setRedoStack([]); // Clear redo stack on new action
     }
   };
 
+  // Undo function: restores the previous state
   const undo = () => {
     if (history.length > 1) {
       const newHistory = [...history];
-      const lastState = newHistory.pop(); // remove the current state
+      const lastState = newHistory.pop();
       setRedoStack(prev => [lastState, ...redoStack]);
       setHistory(newHistory);
       restoreCanvas(newHistory[newHistory.length - 1]);
     }
   };
 
+  // Redo function: reapplies an undone action
   const redo = () => {
     if (redoStack.length > 0) {
       const nextState = redoStack[0];
@@ -63,6 +68,7 @@ export default function DigitalArtCanvas() {
     }
   };
 
+  // Restore canvas state from saved image data
   const restoreCanvas = (imageData) => {
     const img = new Image();
     img.src = imageData;
@@ -73,17 +79,15 @@ export default function DigitalArtCanvas() {
     };
   };
 
+  // Get mouse coordinates relative to the canvas
   const getCanvasCoordinates = (e) => {
     const rect = canvasRef.current.getBoundingClientRect();
-    return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    };
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   };
 
+  // Begin drawing
   const startDrawing = (e) => {
-    // Save current state before drawing
-    saveHistory();
+    saveHistory(); // Save current state before starting new drawing
     const { x, y } = getCanvasCoordinates(e);
     ctxRef.current.beginPath();
     ctxRef.current.moveTo(x, y);
@@ -95,6 +99,7 @@ export default function DigitalArtCanvas() {
     }
   };
 
+  // Continue drawing on mouse move
   const draw = (e) => {
     if (!isDrawing) return;
     const { x, y } = getCanvasCoordinates(e);
@@ -102,11 +107,12 @@ export default function DigitalArtCanvas() {
       ctxRef.current.lineTo(x, y);
       ctxRef.current.stroke();
     } else if (mode === "erase") {
-      // Clear a small rectangle centered on the cursor for erasing
+      // Eraser: clear a rectangle centered on the cursor
       ctxRef.current.clearRect(x - brushSize / 2, y - brushSize / 2, brushSize, brushSize);
     }
   };
 
+  // Finish drawing and save the state
   const stopDrawing = (e) => {
     if (!isDrawing) return;
     setIsDrawing(false);
@@ -125,60 +131,45 @@ export default function DigitalArtCanvas() {
       }
       setStartPos(null);
     }
-    // Save state after finishing drawing
     saveHistory();
   };
 
   return (
-    <div className="flex flex-col items-center bg-gray-100 min-h-screen py-10 px-4">
-      <h1 className="text-3xl font-bold mb-5">🎨 Digital Art Canvas</h1>
-      <div className="flex flex-wrap gap-3 mb-4 justify-center">
-        <input
-          type="color"
-          value={brushColor}
-          onChange={(e) => setBrushColor(e.target.value)}
-          className="w-10 h-10 border"
+    <div className="relative min-h-screen bg-gray-100">
+      {/* Floating header with tools */}
+      <header className="fixed top-0 left-0 w-full z-10 bg-white/80 backdrop-blur-sm border-b border-gray-200">
+        <div className="max-w-5xl mx-auto flex flex-wrap justify-between items-center px-4 py-3">
+          <h1 className="text-xl font-bold">Digital Art Canvas</h1>
+          <div className="flex flex-wrap gap-2 items-center">
+            <button onClick={undo} className="px-3 py-2 bg-yellow-500 text-white rounded">Undo</button>
+            <button onClick={redo} className="px-3 py-2 bg-gray-500 text-white rounded">Redo</button>
+            <button onClick={() => setMode("draw")} className={`px-3 py-2 rounded ${mode === "draw" ? "bg-blue-700" : "bg-blue-500"} text-white`}>Draw</button>
+            <button onClick={() => setMode("erase")} className={`px-3 py-2 rounded ${mode === "erase" ? "bg-red-700" : "bg-red-500"} text-white`}>Eraser</button>
+            <button onClick={() => setMode("rectangle")} className={`px-3 py-2 rounded ${mode === "rectangle" ? "bg-green-700" : "bg-green-500"} text-white`}>Rectangle</button>
+            <button onClick={() => setMode("circle")} className={`px-3 py-2 rounded ${mode === "circle" ? "bg-purple-700" : "bg-purple-500"} text-white`}>Circle</button>
+            <input
+              type="color"
+              value={brushColor}
+              onChange={(e) => setBrushColor(e.target.value)}
+              className="w-10 h-10 border rounded"
+            />
+            {/* Custom animated slider for brush size */}
+            <AnimatedSlider brushSize={brushSize} setBrushSize={setBrushSize} min={1} max={20} />
+          </div>
+        </div>
+      </header>
+
+      {/* Canvas container with top padding to avoid header overlap */}
+      <div className="pt-20 flex justify-center">
+        <canvas
+          ref={canvasRef}
+          className="rounded-lg bg-white shadow-lg"
+          onMouseDown={startDrawing}
+          onMouseMove={draw}
+          onMouseUp={stopDrawing}
+          onMouseOut={stopDrawing}
         />
-        <AnimatedSlider brushSize={brushSize} setBrushSize={setBrushSize} />
-        <button onClick={undo} className="px-4 py-2 bg-yellow-500 text-white rounded">
-          Undo
-        </button>
-        <button onClick={redo} className="px-4 py-2 bg-gray-500 text-white rounded">
-          Redo
-        </button>
-        <button
-          onClick={() => setMode("draw")}
-          className={`px-4 py-2 rounded ${mode === "draw" ? "bg-blue-700" : "bg-blue-500"} text-white`}
-        >
-          Draw
-        </button>
-        <button
-          onClick={() => setMode("erase")}
-          className={`px-4 py-2 rounded ${mode === "erase" ? "bg-red-700" : "bg-red-500"} text-white`}
-        >
-          Eraser
-        </button>
-        <button
-          onClick={() => setMode("rectangle")}
-          className={`px-4 py-2 rounded ${mode === "rectangle" ? "bg-green-700" : "bg-green-500"} text-white`}
-        >
-          Rectangle
-        </button>
-        <button
-          onClick={() => setMode("circle")}
-          className={`px-4 py-2 rounded ${mode === "circle" ? "bg-purple-700" : "bg-purple-500"} text-white`}
-        >
-          Circle
-        </button>
       </div>
-      <canvas
-        ref={canvasRef}
-        className="rounded-lg bg-white shadow-lg"
-        onMouseDown={startDrawing}
-        onMouseMove={draw}
-        onMouseUp={stopDrawing}
-        onMouseOut={stopDrawing}
-      />
     </div>
   );
 }
